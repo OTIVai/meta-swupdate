@@ -11,10 +11,13 @@ COMPATIBLE_MACHINE = "(tegra)"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
+TEGRA_MINIMAL_USE_OVERLAY ??= "false"
+
 S = "${WORKDIR}"
 
 do_install() {
     install -m 0755 ${WORKDIR}/init-boot.sh ${D}/init
+    sed -i -e "s#@@USE_OVERLAY@@#${TEGRA_MINIMAL_USE_OVERLAY}#g" ${D}/init
     install -m 0555 -d ${D}/proc ${D}/sys
     install -m 0755 -d ${D}/dev ${D}/mnt ${D}/run ${D}/usr
     install -m 1777 -d ${D}/tmp
