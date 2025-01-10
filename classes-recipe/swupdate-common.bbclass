@@ -273,8 +273,9 @@ def add_image_to_swu(d, deploydir, imagename, s, encrypt, list_for_cpio):
 
 def swupdate_add_artifacts(d, list_for_cpio):
     import shutil
-    # Search for images listed in SWUPDATE_IMAGES in the DEPLOY directory.
+    # Search for images listed in SWUPDATE_IMAGES in the WORKDIR and DEPLOY directory.
     images = (d.getVar('SWUPDATE_IMAGES') or "").split()
+    extradir = d.getVar('SWUPDATE_IMAGES_EXTRA_DIR')
     deploydir = d.getVar('DEPLOY_DIR_IMAGE')
     imgdeploydir = d.getVar('SWUDEPLOYDIR')
     s = d.getVar('S')
@@ -293,12 +294,15 @@ def swupdate_add_artifacts(d, list_for_cpio):
                 image_found = False
                 for imagebase in imagebases:
                     image_found = add_image_to_swu(d, deploydir, imagebase + fstype, s, encrypted, list_for_cpio)
+                    image_found = image_found or add_image_to_swu(d, extradir, imagebase + fstype, s, encrypted, list_for_cpio)
                     if image_found:
                         break
                 if not image_found:
                     bb.fatal("swupdate cannot find image file: %s" % os.path.join(deploydir, imagebase + fstype))
         else:  # Allow also complete entries like "image.ext4.gz" in SWUPDATE_IMAGES
-            if not add_image_to_swu(d, deploydir, image, s, encrypted, list_for_cpio):
+            image_found = add_image_to_swu(d, deploydir, image, s, encrypted, list_for_cpio)
+            image_found = image_found or add_image_to_swu(d, extradir, image, s, encrypted, list_for_cpio)
+            if not image_found:
                 bb.fatal("swupdate cannot find %s image file" % image)
 
 
